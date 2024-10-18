@@ -120,18 +120,13 @@ Run the script using the following command:
       --api_key "YourVeracodeAPIKey"
    ```
 
-**Note**: Replace the placeholder text with your actual workspace name, project name, application profile name, API ID, and API key.
+**Note**: Replace the placeholder text with the actual workspace name, project name, application profile name, API ID, and API key.
 
 ## Understanding the Script
 
 The script performs the following steps:
 
-1. **Fetch Workspace GUID**: Retrieves the GUID of the specified SCA workspace.
-2. **Fetch Project GUID**: Retrieves the GUID of the specified SCA project within the workspace.
-3. **Fetch Application GUID**: Retrieves the GUID of the specified Veracode application profile.
-4. **Link Project to Application**: Links the SCA project to the application profile using the Veracode API.
-
-## Error Handling
-
-- If the workspace, project, or application profile is not found, the script will raise a `ValueError` with an appropriate message.
-- HTTP errors from API requests are raised using `response.raise_for_status()`.
+1. Retrieves the GUID of the specified SCA workspace.
+2. Retrieves the GUID of the specified SCA project within the workspace.
+3. Retrieves the GUID of the specified Veracode application profile.
+4. Links the SCA project to the application profile using the Veracode SCA API.
