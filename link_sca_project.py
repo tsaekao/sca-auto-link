@@ -6,12 +6,12 @@ import time
 import requests
 import uuid
 import argparse
-from veracode_api_signing.plugin_requests import RequestsAuthPluginVeracodeHMAC  # Import the Veracode HMAC utility
+from veracode_api_signing.plugin_requests import RequestsAuthPluginVeracodeHMAC
 
 def make_api_request(base_url, endpoint, method, api_id, api_key):
     url = f"{base_url}{endpoint}"
     
-    # Prepare the request headers
+    # Prepare headers
     headers = {
         "x-request-timestamp": str(int(time.time())),
         "x-request-nonce": str(uuid.uuid4()),
@@ -21,25 +21,26 @@ def make_api_request(base_url, endpoint, method, api_id, api_key):
     # Create the HMAC Auth object using Veracode's signing library
     auth = RequestsAuthPluginVeracodeHMAC(api_key_id=api_id, api_key_secret=api_key)
     
-    # Logging to check headers and URL
+    # check headers and URL
     print(f"Request URL: {url}")
     print(f"Headers: {headers}")
 
     # Make the API request
     response = requests.request(method, url, headers=headers, auth=auth)
     
-    # Debugging output to check the response
+    # check the response
     print(f"Response Status Code: {response.status_code}")
     print(f"Response Body: {response.text}")
 
-    response.raise_for_status()  # This will raise the HTTPError for 400s and 500s
+    response.raise_for_status()  # this will raise the HTTPError for 400s and 500s
     return response.json()
 
+# This function will get the workspace GUID of the workspace name passed in
 def get_workspace_guid(base_url, workspace_name, api_id, api_key):
     endpoint = "/srcclr/v3/workspaces"
     data = make_api_request(base_url, endpoint, "GET", api_id, api_key)
     
-    # Access the list of workspaces under the '_embedded' key
+    # Access the list of workspaces
     workspaces = data['_embedded']['workspaces']
     
     for workspace in workspaces:
@@ -48,11 +49,12 @@ def get_workspace_guid(base_url, workspace_name, api_id, api_key):
     
     raise ValueError(f"Workspace with name {workspace_name} not found")
 
+# This function will get the project GUID of the project named passed in
 def get_project_guid(base_url, workspace_guid, project_name, api_id, api_key):
     endpoint = f"/srcclr/v3/workspaces/{workspace_guid}/projects"
     data = make_api_request(base_url, endpoint, "GET", api_id, api_key)
     
-    # Access the list of projects under the '_embedded' key
+    # Access the list of projects
     projects = data['_embedded']['projects']
     
     for project in projects:
@@ -61,6 +63,7 @@ def get_project_guid(base_url, workspace_guid, project_name, api_id, api_key):
     
     raise ValueError(f"Project with name {project_name} not found in workspace {workspace_guid}")
 
+# This function will get the application profile GUID of the application profile name passed in.
 def get_app_guid(base_url, appname, api_id, api_key):
     endpoint = "/appsec/v1/applications"
     data = make_api_request(base_url, endpoint, "GET", api_id, api_key)
@@ -72,9 +75,10 @@ def get_app_guid(base_url, appname, api_id, api_key):
                 return app['guid']
     raise ValueError(f"Application with name {appname} not found")
 
+# This will link the SCA project to application profile
 def link_sca_project(base_url, app_guid, project_guid, api_id, api_key):
     endpoint = f"/srcclr/v3/applications/{app_guid}/projects/{project_guid}"
-    data = {}  # If any body data is required, include it here
+    data = {}  
     
     headers = {
         "Content-Type": "application/json"
@@ -84,14 +88,14 @@ def link_sca_project(base_url, app_guid, project_guid, api_id, api_key):
     
     response = requests.put(f"{base_url}{endpoint}", headers=headers, json=data, auth=auth)
     
-    # Debugging output to check the response
+    # check responses
     print(f"Response Status Code: {response.status_code}")
     print(f"Response Body: {response.text}")
     
-    response.raise_for_status()  # This will raise an HTTPError for bad responses
+    response.raise_for_status()  # this will raise an HTTPError for bad responses
     print("SCA Project linked to Application Profile")
 
-# Main execution
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Link an SCA project to a Veracode application profile.')
     parser.add_argument('--workspace_name', required=True, help='The name of the SCA workspace')
