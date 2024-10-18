@@ -81,6 +81,7 @@ pipeline {
 
 - **Python 3.x**: Ensure you have Python 3 installed on your system.
 - **Veracode API Credentials**: Generate your `VERACODE_API_KEY_ID` and `VERACODE_API_KEY_SECRET`. Refer to the [Veracode API Documentation](https://docs.veracode.com/r/c_getting_started_with_the_veracode_api) for guidance.
+- This script assumes that you have already run an SCA Agent-Based scan within a workspace. Refer to the [Veracode Documentation](https://docs.veracode.com/r/c_sc_what_is) if you need help running it. 
 
 ## Installation
 
