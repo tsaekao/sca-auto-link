@@ -1,12 +1,83 @@
-# Veracode SCA Agent-Based Project to Application Profile Link Script
+# Veracode SCA Agent-Based Scan to Application Profile Link Script
 
 This repository contains a Python script that links Veracode SCA Agent-Based projects to a corresponding application profile. The script automates the process of associating a project scanned by the Veracode SCA agent with its corresponding application profile using the Veracode APIs.
 
-## Features
+## Use-Case Example
 
-- **Automated Linking**: Streamlines the process of linking SCA projects to application profiles.
-- **HMAC Authentication**: Utilizes Veracode's HMAC authentication for secure API communication.
-- **Error Handling**: Provides clear error messages for missing workspaces, projects, or application profiles.
+This script can be used within a CI/CD pipeline as a post-build step after running an upload & scan within an application profile AND an SCA Agent-Based scan within a workspace. Here's an example of utilizing this script in a Jenkins Pipeline which builds the application, sends the built application to Veracode for an upload & scan, runs an Agent-Based scan, and links the two together:
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+        
+        stage('Git') {
+            steps {
+                git 'https://github.com/tsaekao/nodegoat.git'
+            }
+        }
+        stage('Package Application') {
+            steps {
+                sh 'curl -fsS https://tools.veracode.com/veracode-cli/install | sh'
+                sh './veracode package -s . -o veracode-artifact -a trust'
+            }
+        }
+
+        stage('Upload SAST') {
+            when {
+                expression {
+                    return true // Set this to true if you want to run this stage
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: '3dd8eb7f-547e-4b79-8a6c-f39954a06c63', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    veracode applicationName: 'nodegoat',
+                    // createSandbox: false,
+                    // sandboxName: 'JenkinsFile',
+                    criticality: 'VeryHigh',
+                    scanName: '$buildnumber',
+                    uploadIncludesPattern: 'veracode-artifact/',
+                    vid: USER,
+                    vkey: PASS
+                    sh "pwd"
+                    echo "sast"
+                }
+            }
+        }
+
+        stage('SCA Agent-Based Scan') {
+            steps {
+                withCredentials([string(credentialsId: 'SRCCLR_API_TOKEN', variable: 'SRCCLR_API_TOKEN')]) {
+                    catchError(buildResult: 'SUCCESS', message: 'SUCCESS') {
+                        sh "srcclr scan . --allow-dirty" 
+                        echo "SCA Agent-Based Scan"
+                    }
+                }
+            }
+        }
+
+        stage('Link SCA Project to Application Profile') {
+            steps {
+                sh '''
+                    apt-get update && apt-get install -y python3 python3-pip || true
+                    pip3 install veracode-api-signing --upgrade
+                '''
+                withCredentials([usernamePassword(credentialsId: '3dd8eb7f-547e-4b79-8a6c-f39954a06c63', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    sh '''
+                        python3 link_sca_project.py --workspace_name "Jenkins Demo" --project_name "tsaekao/nodegoat" --application_profile "nodegoat" --api_id "${USER}" --api_key "${PASS}"
+                    '''
+                }
+            }
+        }
+    }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}
+```
 
 ## Prerequisites
 
