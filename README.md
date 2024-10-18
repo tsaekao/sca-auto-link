@@ -1,6 +1,6 @@
 # Veracode SCA Agent-Based Scan to Application Profile Link Script
 
-This repository contains a Python script that links Veracode SCA Agent-Based projects to a corresponding application profile. The script automates the process of associating a project scanned by the Veracode SCA agent with its corresponding application profile using the Veracode APIs.
+This is a Python script that links Veracode SCA Agent-Based projects to a corresponding application profile. The script automates the process of associating a project scanned by the Veracode SCA agent with its corresponding application profile using the Veracode SCA API.
 
 ## Use-Case Example
 
