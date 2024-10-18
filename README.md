@@ -14,7 +14,7 @@ pipeline {
         
         stage('Git') {
             steps {
-                git 'https://github.com/tsaekao/nodegoat.git'
+                git 'https://github.com/fakeuser/fakerepo.git'
             }
         }
         stage('Package Application') {
@@ -31,7 +31,7 @@ pipeline {
                 }
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: '3dd8eb7f-547e-4b79-8a6c-f39954a06c63', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'fake-credentials-id-sast', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     veracode applicationName: 'nodegoat',
                     // createSandbox: false,
                     // sandboxName: 'JenkinsFile',
@@ -48,7 +48,7 @@ pipeline {
 
         stage('SCA Agent-Based Scan') {
             steps {
-                withCredentials([string(credentialsId: 'SRCCLR_API_TOKEN', variable: 'SRCCLR_API_TOKEN')]) {
+                withCredentials([string(credentialsId: 'fake-credentials-id-srcclr', variable: 'SRCCLR_API_TOKEN')]) {
                     catchError(buildResult: 'SUCCESS', message: 'SUCCESS') {
                         sh "srcclr scan . --allow-dirty" 
                         echo "SCA Agent-Based Scan"
@@ -63,9 +63,9 @@ pipeline {
                     apt-get update && apt-get install -y python3 python3-pip || true
                     pip3 install veracode-api-signing --upgrade
                 '''
-                withCredentials([usernamePassword(credentialsId: '3dd8eb7f-547e-4b79-8a6c-f39954a06c63', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'fake-credentials-id-link', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     sh '''
-                        python3 link_sca_project.py --workspace_name "Jenkins Demo" --project_name "tsaekao/nodegoat" --application_profile "nodegoat" --api_id "${USER}" --api_key "${PASS}"
+                        python3 link_sca_project.py --workspace_name "Jenkins Demo" --project_name "fakeuser/fakerepo" --application_profile "nodegoat" --api_id "${USER}" --api_key "${PASS}"
                     '''
                 }
             }
